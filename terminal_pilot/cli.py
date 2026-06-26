@@ -45,53 +45,9 @@ def start(rule):
         rc.print("[bold red]No free models found or failed to parse pricing![/bold red]")
         return
 
-    # Ask for use case
-    rc.print("\n[bold cyan]Tell us about your use case to get a tailored model recommendation.[/bold cyan]")
-    use_case = questionary.text(
-        "What is your primary use case? (e.g., coding, writing a thesis) [Press Enter to skip]:"
-    ).ask()
-
-    recommended_model = None
-    if use_case:
-        use_case = use_case.lower()
-        filtered_models = []
-        
-        if any(kw in use_case for kw in ["code", "coding", "program", "developer", "software"]):
-            filtered_models = [m for m in free_models if any(k in m["id"].lower() for k in ["coder", "deepseek", "qwen", "llama"])]
-            
-        elif any(kw in use_case for kw in ["thesis", "write", "writing", "essay", "content", "story"]):
-            filtered_models = [m for m in free_models if any(k in m["id"].lower() for k in ["llama", "gemma", "mistral"])]
-            
-        elif any(kw in use_case for kw in ["image", "picture", "draw", "art"]):
-            rc.print("[bold yellow]Note: OpenRouter typically doesn't offer free image generation models. Showing best free text models instead.[/bold yellow]")
-            filtered_models = [m for m in free_models if any(k in m["id"].lower() for k in ["llama", "gemma"])]
-            
-        # If we found matching models for their use case, strictly filter the list to ONLY show those!
-        if filtered_models:
-            free_models = filtered_models
-            recommended_model = free_models[0] # Star the best one in the filtered list
-        else:
-            # If they typed something we didn't recognize, don't show the massive list. Pick the most reliable default.
-            rc.print(f"[bold yellow]No specific models found for '{use_case}'. Showing a curated list instead.[/bold yellow]")
-            free_models = [m for m in free_models if any(k in m["id"].lower() for k in ["llama", "gemma", "qwen", "mistral"])]
-            if free_models:
-                recommended_model = free_models[0]
-
     # Prepare choices for the dropdown
     choices = []
-    
-    # If we have a recommendation, add it at the top
-    if recommended_model:
-        name = recommended_model.get("name", recommended_model["id"])
-        model_id = recommended_model["id"]
-        label = f"⭐ RECOMMENDED: {name} ({model_id})"
-        choices.append(questionary.Choice(title=label, value=model_id))
-        
     for m in free_models:
-        # skip if we already added it as recommended
-        if recommended_model and m["id"] == recommended_model["id"]:
-            continue
-            
         name = m.get("name", m["id"])
         model_id = m["id"]
         label = f"{name} ({model_id})"
@@ -131,6 +87,18 @@ def start(rule):
             if user_input.strip().lower() in ["exit", "quit"]:
                 rc.print("[bold yellow]Goodbye![/bold yellow]")
                 break
+
+            # Handle the /model command to swap models mid-chat
+            if user_input.strip().lower() == "/model":
+                new_model = questionary.select(
+                    "Switch to a different model:",
+                    choices=choices,
+                    use_indicator=True
+                ).ask()
+                if new_model:
+                    selected_model_id = new_model
+                    rc.print(f"[bold green]✓ Switched model to:[/bold green] [bold cyan]{selected_model_id}[/bold cyan]")
+                continue
 
             # Handle the /read command
             if user_input.strip().lower().startswith("/read "):
