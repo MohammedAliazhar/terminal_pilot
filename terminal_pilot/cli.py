@@ -17,6 +17,31 @@ if global_env.exists():
 
 rc = Console()
 
+def check_for_updates():
+    """Check GitHub for a newer version in pyproject.toml."""
+    try:
+        import requests
+        import re
+        from importlib.metadata import version
+        
+        url = "https://raw.githubusercontent.com/MohammedAliazhar/terminal_pilot/main/pyproject.toml"
+        resp = requests.get(url, timeout=1.5)
+        if resp.status_code == 200:
+            remote_match = re.search(r'version\s*=\s*"([^"]+)"', resp.text)
+            if remote_match:
+                remote_version = remote_match.group(1)
+                try:
+                    local_version = version("Terminal_Pilot")
+                except:
+                    local_version = "0.1.0"
+                    
+                if remote_version != local_version and remote_version > local_version:
+                    rc.print(f"\n[bold yellow]💡 A new version ({remote_version}) of Terminal Pilot is available![/bold yellow]")
+                    rc.print("[yellow]Run this command to upgrade:[/yellow]")
+                    rc.print("pip install -U git+https://github.com/MohammedAliazhar/terminal_pilot.git\n")
+    except Exception:
+        pass # Fail silently so we don't break the CLI if they are offline
+
 @click.group()
 def main():
     """Terminal_Pilot - An AI assistant using OpenRouter."""
@@ -26,6 +51,7 @@ def main():
 @click.option('--rule', type=click.Path(exists=True), help="Path to a text/markdown file containing rules (e.g., ponytail.md)")
 def start(rule):
     """Connect to OpenRouter, pick a free model, and start building."""
+    check_for_updates()
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         rc.print("[bold red]Error: OPENROUTER_API_KEY not found in .env file.[/bold red]")
@@ -154,6 +180,7 @@ def ask(question, model):
     
     Example: cat error.log | tp ask "Why is this crashing?"
     """
+    check_for_updates()
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         rc.print("[bold red]Error: OPENROUTER_API_KEY not found.[/bold red]")

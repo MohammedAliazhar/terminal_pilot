@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Terminal_Pilot"
-version = "0.1.0"
+version = "0.1.1"
 description = "A CLI tool to connect to OpenRouter and chat with free models."
 dependencies = [
     "click>=8.0",
