@@ -63,12 +63,19 @@ def start(rule):
             filtered_models = [m for m in free_models if any(k in m["id"].lower() for k in ["llama", "gemma", "mistral"])]
             
         elif any(kw in use_case for kw in ["image", "picture", "draw", "art"]):
-            rc.print("[bold yellow]Note: OpenRouter typically doesn't offer free image generation models. Showing best free text models.[/bold yellow]")
+            rc.print("[bold yellow]Note: OpenRouter typically doesn't offer free image generation models. Showing best free text models instead.[/bold yellow]")
+            filtered_models = [m for m in free_models if any(k in m["id"].lower() for k in ["llama", "gemma"])]
             
         # If we found matching models for their use case, strictly filter the list to ONLY show those!
         if filtered_models:
             free_models = filtered_models
             recommended_model = free_models[0] # Star the best one in the filtered list
+        else:
+            # If they typed something we didn't recognize, don't show the massive list. Pick the most reliable default.
+            rc.print(f"[bold yellow]No specific models found for '{use_case}'. Showing a curated list instead.[/bold yellow]")
+            free_models = [m for m in free_models if any(k in m["id"].lower() for k in ["llama", "gemma", "qwen", "mistral"])]
+            if free_models:
+                recommended_model = free_models[0]
 
     # Prepare choices for the dropdown
     choices = []
