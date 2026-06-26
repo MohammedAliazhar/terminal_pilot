@@ -54,20 +54,21 @@ def start(rule):
     recommended_model = None
     if use_case:
         use_case = use_case.lower()
+        filtered_models = []
+        
         if any(kw in use_case for kw in ["code", "coding", "program", "developer", "software"]):
-            # Find a coder model, prioritize deepseek or qwen coder
-            for m in free_models:
-                m_id = m["id"].lower()
-                if "coder" in m_id or "deepseek" in m_id or "qwen" in m_id:
-                    recommended_model = m
-                    break
+            filtered_models = [m for m in free_models if any(k in m["id"].lower() for k in ["coder", "deepseek", "qwen", "llama"])]
+            
         elif any(kw in use_case for kw in ["thesis", "write", "writing", "essay", "content", "story"]):
-            # Find a good general model for writing
-            for m in free_models:
-                m_id = m["id"].lower()
-                if "llama" in m_id or "gemma" in m_id or "mistral" in m_id:
-                    recommended_model = m
-                    break
+            filtered_models = [m for m in free_models if any(k in m["id"].lower() for k in ["llama", "gemma", "mistral"])]
+            
+        elif any(kw in use_case for kw in ["image", "picture", "draw", "art"]):
+            rc.print("[bold yellow]Note: OpenRouter typically doesn't offer free image generation models. Showing best free text models.[/bold yellow]")
+            
+        # If we found matching models for their use case, strictly filter the list to ONLY show those!
+        if filtered_models:
+            free_models = filtered_models
+            recommended_model = free_models[0] # Star the best one in the filtered list
 
     # Prepare choices for the dropdown
     choices = []
