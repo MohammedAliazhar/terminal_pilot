@@ -58,3 +58,31 @@ class OpenRouter:
         )
         response.raise_for_status()
         return response.json()
+
+    def chat_stream(self, model_id: str, messages: list):
+        """Send a streaming chat completion request."""
+        payload = {
+            "model": model_id,
+            "messages": messages,
+            "stream": True
+        }
+        response = requests.post(
+            f"{self.BASE_URL}/chat/completions",
+            headers=self.headers,
+            json=payload,
+            stream=True
+        )
+        response.raise_for_status()
+        
+        import json
+        for line in response.iter_lines():
+            if line:
+                line = line.decode('utf-8')
+                if line.startswith('data: ') and line != 'data: [DONE]':
+                    try:
+                        data = json.loads(line[6:])
+                        chunk = data['choices'][0]['delta'].get('content', '')
+                        if chunk:
+                            yield chunk
+                    except Exception:
+                        continue

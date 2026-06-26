@@ -3,6 +3,7 @@ import click
 import questionary
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.live import Live
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -154,12 +155,12 @@ def start(rule):
 
             messages.append({"role": "user", "content": user_input})
 
-            with rc.status("[bold magenta]AI is thinking..."):
-                response = client.chat(selected_model_id, messages)
-
-            reply = response["choices"][0]["message"]["content"]
             rc.print("\n[bold magenta]AI:[/bold magenta]")
-            rc.print(Markdown(reply))
+            reply = ""
+            with Live(Markdown(reply), console=rc, refresh_per_second=15) as live:
+                for chunk in client.chat_stream(selected_model_id, messages):
+                    reply += chunk
+                    live.update(Markdown(reply))
             rc.print("-" * 40)
             
             messages.append({"role": "assistant", "content": reply})
@@ -222,12 +223,13 @@ def ask(question, model):
         
     messages = [{"role": "user", "content": content.strip()}]
     
-    with rc.status(f"[bold magenta]Asking {model}..."):
-        try:
-            response = client.chat(model, messages)
-            reply = response["choices"][0]["message"]["content"]
-            rc.print(f"\n[bold cyan]Model: {model}[/bold cyan]")
-            rc.print(Markdown(reply))
-            rc.print()
+    try:
+        rc.print(f"\n[bold cyan]Model: {model}[/bold cyan]")
+        reply = ""
+        with Live(Markdown(reply), console=rc, refresh_per_second=15) as live:
+            for chunk in client.chat_stream(model, messages):
+                reply += chunk
+                live.update(Markdown(reply))
+        rc.print()
         except Exception as e:
             rc.print(f"[bold red]Error:[/bold red] {e}")
