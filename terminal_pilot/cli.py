@@ -141,3 +141,64 @@ def start(rule):
             break
         except Exception as e:
             rc.print(f"\n[bold red]Error during chat:[/bold red] {e}")
+
+import sys
+
+@main.command()
+@click.argument('question', required=False, default="")
+@click.option('--model', help="Specify a model ID to use (defaults to a free Llama/Gemma)")
+def ask(question, model):
+    """Ask a question, optionally piping data via stdin.
+    
+    Example: cat error.log | tp ask "Why is this crashing?"
+    """
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        rc.print("[bold red]Error: OPENROUTER_API_KEY not found.[/bold red]")
+        return
+        
+    piped_data = ""
+    if not sys.stdin.isatty():
+        piped_data = sys.stdin.read().strip()
+        
+    if not question and not piped_data:
+        rc.print("[bold red]Error: You must provide a question or pipe data to this command.[/bold red]")
+        return
+
+    client = OpenRouter(api_key=api_key)
+    
+    with rc.status("[bold green]Connecting..."):
+        if not model:
+            try:
+                free_models = client.get_free_models()
+                if not free_models:
+                    rc.print("[bold red]No free models found![/bold red]")
+                    return
+                for m in free_models:
+                    m_id = m["id"].lower()
+                    if "llama" in m_id or "gemma" in m_id:
+                        model = m["id"]
+                        break
+                if not model:
+                    model = free_models[0]["id"]
+            except Exception as e:
+                rc.print(f"[bold red]Failed to fetch models:[/bold red] {e}")
+                return
+                
+    content = ""
+    if piped_data:
+        content += f"Context/Data:\n{piped_data}\n\n"
+    if question:
+        content += f"Question: {question}"
+        
+    messages = [{"role": "user", "content": content.strip()}]
+    
+    with rc.status(f"[bold magenta]Asking {model}..."):
+        try:
+            response = client.chat(model, messages)
+            reply = response["choices"][0]["message"]["content"]
+            rc.print(f"\n[bold cyan]Model: {model}[/bold cyan]")
+            rc.print(Markdown(reply))
+            rc.print()
+        except Exception as e:
+            rc.print(f"[bold red]Error:[/bold red] {e}")

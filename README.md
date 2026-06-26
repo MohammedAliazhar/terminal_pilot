@@ -34,6 +34,15 @@ tp start
 terminal_pilot start
 ```
 
+### Pipe Support (stdin)
+You can pipe data directly into the AI to analyze logs, code, or command outputs instantly without opening an interactive chat:
+
+```bash
+cat error.log | tp ask "Why is this crashing?"
+git diff | tp ask "Write a commit message for these changes"
+tp ask "What is the command to undo a git commit?"
+```
+
 ### Optional: Custom Rules
 You can inject custom system prompts (personas) by feeding it a text or markdown file:
 ```bash
