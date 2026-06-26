@@ -130,9 +130,22 @@ def start(rule):
                 try:
                     with open(filename, "r", encoding="utf-8") as f:
                         file_content = f.read()
-                    # Add file content as context but don't force the AI to reply immediately
-                    messages.append({"role": "system", "content": f"The user just loaded the file '{filename}'. Here is the content:\n\n{file_content}"})
-                    rc.print(f"[bold cyan]✓ Loaded {filename} into memory![/bold cyan]")
+                    
+                    # Force the AI to read it and reply so we don't break the user->assistant alternating pattern
+                    prompt = f"I am loading a file named '{filename}' into our context. Please reply with 'File loaded successfully.' and nothing else. Here is the file content:\n\n{file_content}"
+                    messages.append({"role": "user", "content": prompt})
+                    rc.print(f"[bold cyan]✓ Reading {filename}...[/bold cyan]")
+                    
+                    with rc.status("[bold magenta]AI is processing the file..."):
+                        response = client.chat(selected_model_id, messages)
+                    
+                    reply = response["choices"][0]["message"]["content"]
+                    rc.print("\n[bold magenta]AI:[/bold magenta]")
+                    rc.print(Markdown(reply))
+                    rc.print("-" * 40)
+                    
+                    messages.append({"role": "assistant", "content": reply})
+
                 except Exception as e:
                     rc.print(f"[bold red]Could not read file:[/bold red] {e}")
                 continue
