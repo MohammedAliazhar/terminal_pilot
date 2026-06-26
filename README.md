@@ -34,8 +34,8 @@ tp start
 terminal_pilot start
 ```
 
-### Optional: Custom Rules (e.g. Ponytail)
+### Optional: Custom Rules
 You can inject custom system prompts (personas) by feeding it a text or markdown file:
 ```bash
-tp start --rule ponytail.md
+tp start --rule rules.md
 ```
