@@ -39,7 +39,7 @@ def check_for_updates():
                 if remote_version != local_version and remote_version > local_version:
                     rc.print(f"\n[bold yellow]💡 A new version ({remote_version}) of Terminal Pilot is available![/bold yellow]")
                     rc.print("[yellow]Run this command to upgrade:[/yellow]")
-                    rc.print("pip install -U git+https://github.com/MohammedAliazhar/terminal_pilot.git\n")
+                    rc.print("pip install -U Terminal-Pilot\n")
     except Exception:
         pass # Fail silently so we don't break the CLI if they are offline
 

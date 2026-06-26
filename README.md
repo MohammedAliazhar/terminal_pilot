@@ -4,16 +4,10 @@ A minimalist, interactive CLI tool to connect to OpenRouter and chat with free A
 
 ## Installation
 
-1. Clone this repository:
-   ```bash
-   git clone <YOUR_GITHUB_REPO_URL>
-   cd Terminal_Pilot
-   ```
-
-2. Install the CLI tool globally (or in a virtual environment):
-   ```bash
-   pip install -e .
-   ```
+You can install Terminal Pilot globally directly from PyPI:
+```bash
+pip install Terminal-Pilot
+```
 
 ## Configuration
 
