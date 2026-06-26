@@ -231,5 +231,5 @@ def ask(question, model):
                 reply += chunk
                 live.update(Markdown(reply))
         rc.print()
-        except Exception as e:
-            rc.print(f"[bold red]Error:[/bold red] {e}")
+    except Exception as e:
+        rc.print(f"[bold red]Error:[/bold red] {e}")
