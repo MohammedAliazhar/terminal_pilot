@@ -39,6 +39,13 @@ Inside the interactive chat, you can instantly load files into the AI's memory b
 ? You: Give me a summary of this project.
 ```
 
+### Changing Models Mid-Chat
+If a model hits a rate limit or you want to switch to a different one, you don't need to exit. Just type `/model` to hot-swap:
+```text
+? You: /model
+✓ Switched model to: google/gemma-3
+```
+
 ### Pipe Support (stdin)
 You can pipe data directly into the AI to analyze logs, code, or command outputs instantly without opening an interactive chat:
 
