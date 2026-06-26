@@ -30,8 +30,13 @@ Start the interactive assistant from anywhere in your terminal:
 
 ```bash
 tp start
-# or
-terminal_pilot start
+```
+
+Inside the interactive chat, you can instantly load files into the AI's memory by using the `/read` command:
+```text
+? You: /read requirements.md
+✓ Loaded requirements.md into memory!
+? You: Give me a summary of this project.
 ```
 
 ### Pipe Support (stdin)

@@ -124,6 +124,19 @@ def start(rule):
                 rc.print("[bold yellow]Goodbye![/bold yellow]")
                 break
 
+            # Handle the /read command
+            if user_input.strip().lower().startswith("/read "):
+                filename = user_input.split(" ", 1)[1].strip()
+                try:
+                    with open(filename, "r", encoding="utf-8") as f:
+                        file_content = f.read()
+                    # Add file content as context but don't force the AI to reply immediately
+                    messages.append({"role": "system", "content": f"The user just loaded the file '{filename}'. Here is the content:\n\n{file_content}"})
+                    rc.print(f"[bold cyan]✓ Loaded {filename} into memory![/bold cyan]")
+                except Exception as e:
+                    rc.print(f"[bold red]Could not read file:[/bold red] {e}")
+                continue
+
             messages.append({"role": "user", "content": user_input})
 
             with rc.status("[bold magenta]AI is thinking..."):
