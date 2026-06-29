@@ -46,8 +46,31 @@ git diff | tp ask "Write a commit message for these changes"
 tp ask "What is the command to undo a git commit?"
 ```
 
-### Optional: Custom Rules
-You can inject custom system prompts (personas) by feeding it a text or markdown file:
+### Personas & Rules
+
+Terminal Pilot ships with a **default persona** out of the box (a lazy senior developer focused on YAGNI). To disable or modify the default persona, simply edit or clear the `~/.terminal_pilot_default.md` file that gets automatically generated in your home directory.
+
+You can hot-swap the AI's personality or rules at any point—even mid-chat—using the `/rule` command:
+
+```text
+? You: /rule concise
+✓ Rule loaded mid-chat: concise
+```
+
+Terminal Pilot supports several ways to load rules:
+1. **Built-in Personas**: Use our pre-configured shortcuts (e.g., `ponytail`, `pirate`, `concise`).
+2. **Local Files & Remote URLs**: Pass any `.md` file or raw URL (`/rule https://raw.github.../prompt.md`).
+3. **Your Custom Aliases**: Create a `~/.terminal_pilot_rules.json` file in your home directory with your own shortcuts:
+   ```json
+   {
+     "hacker": "You are a 90s movie hacker...",
+     "expert": "You are a senior python developer..."
+   }
+   ```
+   Then simply type `/rule hacker` anywhere!
+
+You can also start the CLI with specific rules instantly (and chain them):
 ```bash
-tp start --rule rules.md
+tp start --rule pirate
+tp start --rule https://example.com/rule.md --rule concise
 ```
