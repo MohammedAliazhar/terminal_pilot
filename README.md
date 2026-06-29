@@ -11,12 +11,9 @@ pip install Terminal-Pilot
 
 ## Configuration
 
-You need an OpenRouter API key to use this tool. 
-Create a file named `.env` in this directory (or in your home directory as `.terminal_pilot_env`) and add your key:
+Zero configuration required! 
 
-```env
-OPENROUTER_API_KEY=your_openrouter_key_here
-```
+Just run `tp start`. If you don't have an OpenRouter API key set up, the CLI will interactively ask you for it and securely save it for future sessions.
 
 ## Usage
 
