@@ -214,6 +214,22 @@ def start(rule):
     # Interactive Chat Loop
     messages = []
 
+    default_rule_path = Path.home() / ".terminal_pilot_default.md"
+    if not default_rule_path.exists():
+        try:
+            with open(default_rule_path, "w", encoding="utf-8") as f:
+                f.write("You are a lazy senior developer. Before writing code, ask: 1. Does it need to exist at all (YAGNI)? 2. Does the standard library do it? 3. Can it be one line? Build the absolute minimum that works. No boilerplate.")
+        except Exception:
+            pass
+
+    try:
+        with open(default_rule_path, "r", encoding="utf-8") as f:
+            default_content = f.read().strip()
+        if default_content:
+            messages.append({"role": "system", "content": default_content})
+    except Exception:
+        pass
+
     if rule:
         for r in rule:
             try:
