@@ -162,6 +162,32 @@ def main():
     """Terminal_Pilot - An AI assistant using OpenRouter."""
     pass
 
+@main.command()
+def auth():
+    """Update or set your OpenRouter API key."""
+    rc.print("[bold cyan]Enter your new OpenRouter API key[/bold cyan] (Get one at https://openrouter.ai/keys)")
+    api_key = questionary.password("API Key:").ask()
+    if not api_key:
+        rc.print("[bold yellow]Cancelled.[/bold yellow]")
+        return
+    
+    global_env = Path.home() / ".terminal_pilot_env"
+    
+    lines = []
+    if global_env.exists():
+        with open(global_env, "r") as f:
+            lines = f.readlines()
+            
+    with open(global_env, "w") as f:
+        for line in lines:
+            if not line.startswith("OPENROUTER_API_KEY="):
+                f.write(line)
+        f.write(f"OPENROUTER_API_KEY={api_key}\n")
+        
+    os.environ["OPENROUTER_API_KEY"] = api_key
+    rc.print("[bold green]✓ API Key updated successfully![/bold green]")
+
+
 
 @main.command()
 @click.option('--rule', multiple=True, help="Path or URL to a text/markdown file containing rules. Can be used multiple times.")

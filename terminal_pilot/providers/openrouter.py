@@ -14,7 +14,8 @@ class OpenRouter:
     BASE_URL = "https://openrouter.ai/api/v1"
 
     def __init__(self, api_key=None):
-        self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
+        raw_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
+        self.api_key = raw_key.strip().strip("\"'")
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "HTTP-Referer": "http://localhost",
