@@ -15,6 +15,11 @@ Zero configuration required!
 
 Just run `tp start`. If you don't have an OpenRouter API key set up, the CLI will interactively ask you for it and securely save it for future sessions.
 
+If you ever need to update or change your OpenRouter API key, just run:
+```bash
+tp auth
+```
+
 ## Usage
 
 Start the interactive assistant from anywhere in your terminal:
@@ -23,11 +28,15 @@ Start the interactive assistant from anywhere in your terminal:
 tp start
 ```
 
-Inside the interactive chat, you can instantly load files into the AI's memory by using the `/read` command:
+Inside the interactive chat, you can instantly load files into the AI's memory by using the `/read` command. You can read files in your current folder, or provide paths to files in other folders:
 ```text
 ? You: /read requirements.md
-✓ Loaded requirements.md into memory!
-? You: Give me a summary of this project.
+✓ Reading requirements.md...
+? You: /read src/components/App.jsx
+✓ Reading src/components/App.jsx...
+? You: /read C:\Users\azhar\Desktop\error.log
+✓ Reading C:\Users\azhar\Desktop\error.log...
+? You: Give me a summary of these files.
 ```
 
 ### Changing Models Mid-Chat
