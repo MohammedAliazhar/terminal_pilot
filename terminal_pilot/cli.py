@@ -417,21 +417,18 @@ def start(rule):
 
             # ponytail: extract code blocks and optionally save them
             code_blocks = re.findall(r'```[^\n]*\n(.*?)\n```', reply, re.DOTALL)
-            if code_blocks and questionary.confirm("Save generated code to files?").ask():
-                for i, code in enumerate(code_blocks):
-                    snippet = code[:100].strip() + ("..." if len(code) > 100 else "")
-                    rc.print(f"\n[bold cyan]Block {i+1}:[/bold cyan]\n[dim]{snippet}[/dim]")
-                    if questionary.confirm("Save this block?").ask():
-                        path = questionary.text("File path (leave empty to skip):").ask()
-                        if path:
-                            try:
-                                if os.path.dirname(path):
-                                    os.makedirs(os.path.dirname(path), exist_ok=True)
-                                with open(path, "w", encoding="utf-8") as f:
-                                    f.write(code)
-                                rc.print(f"[bold green]✓ Saved to {path}[/bold green]")
-                            except Exception as e:
-                                rc.print(f"[bold red]Failed to save:[/bold red] {e}")
+            if code_blocks and questionary.confirm(f"Save {len(code_blocks)} code block(s) to a file?").ask():
+                path = questionary.text("File path (leave empty to skip):").ask()
+                if path:
+                    try:
+                        if os.path.dirname(path):
+                            os.makedirs(os.path.dirname(path), exist_ok=True)
+                        combined_code = "\n\n".join(code_blocks)
+                        with open(path, "w", encoding="utf-8") as f:
+                            f.write(combined_code)
+                        rc.print(f"[bold green]✓ Saved all code to {path}[/bold green]")
+                    except Exception as e:
+                        rc.print(f"[bold red]Failed to save file:[/bold red] {e}")
 
         except KeyboardInterrupt:
             rc.print("\n[bold yellow]Chat terminated by user.[/bold yellow]")
