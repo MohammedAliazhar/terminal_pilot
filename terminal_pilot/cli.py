@@ -194,7 +194,13 @@ def start(rule):
     """Connect to OpenRouter, pick a free model, and start building."""
     try:
         from importlib.metadata import version
-        rc.print(f"[bold cyan]Terminal Pilot v{version('Terminal_Pilot')}[/bold cyan]")
+        from rich.panel import Panel
+        from rich.text import Text
+        v = version('Terminal_Pilot')
+        banner = Text(justify="center")
+        banner.append("🚀 TERMINAL PILOT\n", style="bold cyan")
+        banner.append(f"v{v} - Your AI Pair Programmer", style="dim italic")
+        rc.print(Panel(banner, border_style="cyan", padding=(1, 4), expand=False))
     except Exception:
         pass
     check_for_updates()
@@ -382,6 +388,22 @@ def start(rule):
                 continue
 
             messages.append({"role": "user", "content": user_input})
+
+            # --- Token Dieting & Counting ---
+            char_count = sum(len(str(m.get("content", ""))) for m in messages)
+            approx_tokens = char_count // 4
+
+            if approx_tokens > 6000 and len(messages) > 4:
+                sys_msgs = [m for m in messages if m["role"] == "system"]
+                recent_msgs = messages[-4:]
+                messages = sys_msgs + recent_msgs
+                
+                char_count = sum(len(str(m.get("content", ""))) for m in messages)
+                approx_tokens = char_count // 4
+                rc.print("[dim yellow]⚠ Token diet applied (dropped older chat history to save tokens).[/dim yellow]")
+
+            rc.print(f"[dim cyan]Tokens sent: ~{approx_tokens} (Limit: 8000)[/dim cyan]")
+            # --------------------------------
 
             rc.print("\n[bold magenta]AI:[/bold magenta]")
             reply = ""
