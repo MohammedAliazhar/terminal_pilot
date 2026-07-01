@@ -72,6 +72,16 @@ If the chat history is getting too long or you want to remove any loaded rules, 
 ✓ Chat memory and rules cleared! (Default rule re-applied)
 ```
 
+### API Key Rotation
+If you hit an OpenRouter rate limit (429 Error), Terminal Pilot can seamlessly fallback to a secondary API key. Simply provide multiple keys separated by commas in your `.env` or during `tp auth`.
+```env
+OPENROUTER_API_KEY="sk-or-v1-key1,sk-or-v1-key2"
+```
+The CLI will automatically cycle through the keys if one gets rate-limited, preventing chat interruptions.
+
+### Token Dieting
+To prevent your chat from crashing due to large context limits, Terminal Pilot tracks your token usage live (displayed above every AI response). If your chat history exceeds ~6,000 tokens, the "Token Diet" automatically activates—silently pruning older messages while preserving your system rules and newest messages to keep the AI fast and focused.
+
 ### Pipe Support (stdin)
 You can pipe data directly into the AI to analyze logs, code, or command outputs instantly without opening an interactive chat:
 
