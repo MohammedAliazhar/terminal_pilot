@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Terminal_Pilot"
-version = "0.1.6"
+version = "0.1.10"
 description = "A minimalist CLI tool to connect to OpenRouter and chat with free AI models directly from your terminal."
 readme = "README.md"
 authors = [

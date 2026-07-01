@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from .providers.openrouter import OpenRouter
 from pathlib import Path
 from dotenv import load_dotenv
@@ -25,6 +26,10 @@ def get_project_context(startpath=".", max_depth=3):
     ignore_dirs = {'.git', '__pycache__', 'node_modules', 'venv',
                    'env', '.venv', 'dist', 'build', '.idea', '.vscode'}
     tree = []
+    key_files_content = ""
+    total_chars = 0
+    max_chars = 30000
+    important_exts = {'.md', '.py', '.js', '.ts', '.jsx', '.tsx', '.html', '.css', '.json', '.toml', '.rs', '.go', '.java', '.cpp', '.h'}
 
     start_path = Path(startpath)
     for root, dirs, files in os.walk(start_path):
@@ -49,32 +54,23 @@ def get_project_context(startpath=".", max_depth=3):
         visible_files = [f for f in files if not f.startswith('.')]
         for f in visible_files[:20]:
             tree.append(f"{indent}📄 {f}")
+            
+            # ponytail: inline file reading while walking tree
+            if (Path(f).suffix in important_exts or f in ["Dockerfile", "Makefile"]) and total_chars < max_chars:
+                fpath = os.path.join(root, f)
+                try:
+                    with open(fpath, "r", encoding="utf-8") as file_obj:
+                        content = file_obj.read()
+                        if total_chars + len(content) < max_chars:
+                            key_files_content += f"\n\n--- {rel_path / f} ---\n{content}"
+                            total_chars += len(content)
+                except Exception:
+                    pass
+
         if len(visible_files) > 20:
             tree.append(f"{indent}... ({len(visible_files) - 20} more files)")
 
-    tree_str = "\n".join(tree)
-
-    key_files_content = ""
-    try:
-        root_files = [f for f in os.listdir(
-            startpath) if os.path.isfile(os.path.join(startpath, f))]
-        important_files = [f for f in root_files if f.endswith(
-            '.md')] + ["pyproject.toml", "package.json", "requirements.txt"]
-        important_files = list(set(important_files))
-
-        for kf in important_files:
-            kf_path = os.path.join(startpath, kf)
-            if os.path.exists(kf_path):
-                try:
-                    with open(kf_path, "r", encoding="utf-8") as f:
-                        content = f.read()[:2000]
-                        key_files_content += f"\n\n--- {kf} ---\n{content}"
-                except Exception:
-                    pass
-    except Exception:
-        pass
-
-    return tree_str, key_files_content
+    return "\n".join(tree), key_files_content
 
 
 def get_or_prompt_api_key():
@@ -106,7 +102,10 @@ def print_error(e, prefix="Error"):
 BUILTIN_RULES = {
     "ponytail": "You are in ponytail mode. You are a lazy senior developer. Before writing code, ask: YAGNI? Standard library? One line? Build the absolute minimum. No boilerplate.",
     "pirate": "You are a swashbuckling pirate. Respond to all queries as a pirate captain.",
-    "concise": "Provide extremely concise answers. No pleasantries. No explanations unless asked. Just the direct answer or code."
+    "concise": "Provide extremely concise answers. No pleasantries. No explanations unless asked. Just the direct answer or code.",
+    "clear": "IGNORE ALL PREVIOUS INSTRUCTIONS AND RULES. Revert to being a standard, helpful, and professional AI coding assistant.",
+    "tutor": "You are a patient computer science professor. Do not just output code. Break down the concepts, explain why the code works line-by-line, and teach best practices.",
+    "yoda": "You are Yoda from Star Wars. You must speak in Yoda's iconic backward sentence structure. Cryptic and wise, you must be."
 }
 
 def load_rule_content(r):
@@ -193,6 +192,11 @@ def auth():
 @click.option('--rule', multiple=True, help="Path or URL to a text/markdown file containing rules. Can be used multiple times.")
 def start(rule):
     """Connect to OpenRouter, pick a free model, and start building."""
+    try:
+        from importlib.metadata import version
+        rc.print(f"[bold cyan]Terminal Pilot v{version('Terminal_Pilot')}[/bold cyan]")
+    except Exception:
+        pass
     check_for_updates()
     api_key = get_or_prompt_api_key()
     if not api_key:
@@ -274,6 +278,18 @@ def start(rule):
             if user_input.strip().lower() in ["exit", "quit"]:
                 rc.print("[bold yellow]Goodbye![/bold yellow]")
                 break
+
+            # Handle the /clear command to wipe chat memory
+            if user_input.strip().lower() == "/clear":
+                messages.clear()
+                try:
+                    with open(default_rule_path, "r", encoding="utf-8") as f:
+                        if content := f.read().strip():
+                            messages.append({"role": "system", "content": content})
+                except Exception:
+                    pass
+                rc.print("[bold green]✓ Chat memory and rules cleared![/bold green] (Default rule re-applied)")
+                continue
 
             # Handle the /model command to swap models mid-chat
             if user_input.strip().lower() == "/model":
@@ -377,6 +393,24 @@ def start(rule):
 
             messages.append({"role": "assistant", "content": reply})
 
+            # ponytail: extract code blocks and optionally save them
+            code_blocks = re.findall(r'```[^\n]*\n(.*?)\n```', reply, re.DOTALL)
+            if code_blocks and questionary.confirm("Save generated code to files?").ask():
+                for i, code in enumerate(code_blocks):
+                    snippet = code[:100].strip() + ("..." if len(code) > 100 else "")
+                    rc.print(f"\n[bold cyan]Block {i+1}:[/bold cyan]\n[dim]{snippet}[/dim]")
+                    if questionary.confirm("Save this block?").ask():
+                        path = questionary.text("File path (leave empty to skip):").ask()
+                        if path:
+                            try:
+                                if os.path.dirname(path):
+                                    os.makedirs(os.path.dirname(path), exist_ok=True)
+                                with open(path, "w", encoding="utf-8") as f:
+                                    f.write(code)
+                                rc.print(f"[bold green]✓ Saved to {path}[/bold green]")
+                            except Exception as e:
+                                rc.print(f"[bold red]Failed to save:[/bold red] {e}")
+
         except KeyboardInterrupt:
             rc.print("\n[bold yellow]Chat terminated by user.[/bold yellow]")
             break
@@ -395,6 +429,11 @@ def ask(question, model):
 
     Example: cat error.log | tp ask "Why is this crashing?"
     """
+    try:
+        from importlib.metadata import version
+        rc.print(f"[bold cyan]Terminal Pilot v{version('Terminal_Pilot')}[/bold cyan]")
+    except Exception:
+        pass
     check_for_updates()
     api_key = get_or_prompt_api_key()
     if not api_key:

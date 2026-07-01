@@ -50,7 +50,8 @@ class OpenRouter:
         """Send a chat completion request to OpenRouter."""
         payload = {
             "model": model_id,
-            "messages": messages
+            "messages": messages,
+            "max_tokens": 8000
         }
         response = requests.post(
             f"{self.BASE_URL}/chat/completions",
@@ -65,7 +66,8 @@ class OpenRouter:
         payload = {
             "model": model_id,
             "messages": messages,
-            "stream": True
+            "stream": True,
+            "max_tokens": 8000
         }
         response = requests.post(
             f"{self.BASE_URL}/chat/completions",

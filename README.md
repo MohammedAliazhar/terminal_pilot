@@ -39,11 +39,37 @@ Inside the interactive chat, you can instantly load files into the AI's memory b
 ? You: Give me a summary of these files.
 ```
 
+### Project Context Awareness
+You can instantly make the AI aware of your entire project structure. Just type `/context` in the chat, and Terminal Pilot will scan your current directory tree and inject key files (like `README.md`, `package.json`, `pyproject.toml`) into the AI's memory:
+```text
+? You: /context
+✓ Scanning project directory for context...
+```
+
+### Auto Code Extraction
+When the AI generates code, Terminal Pilot automatically detects markdown code blocks and offers to save them directly to your files:
+```text
+? Save generated code to files? (y/N) y
+
+Block 1:
+print("Hello World")
+? Save this block? (Y/n) y
+? File path (leave empty to skip): src/main.py
+✓ Saved to src/main.py
+```
+
 ### Changing Models Mid-Chat
 If a model hits a rate limit or you want to switch to a different one, you don't need to exit. Just type `/model` to hot-swap:
 ```text
 ? You: /model
 ✓ Switched model to: google/gemma-3
+```
+
+### Clearing Chat Memory
+If the chat history is getting too long or you want to remove any loaded rules, just type `/clear`. This instantly wipes the AI's memory of the conversation and re-applies your default persona.
+```text
+? You: /clear
+✓ Chat memory and rules cleared! (Default rule re-applied)
 ```
 
 ### Pipe Support (stdin)
@@ -67,7 +93,7 @@ You can hot-swap the AI's personality or rules at any point—even mid-chat—us
 ```
 
 Terminal Pilot supports several ways to load rules:
-1. **Built-in Personas**: Use our pre-configured shortcuts (e.g., `ponytail`, `pirate`, `concise`).
+1. **Built-in Personas**: Use our pre-configured shortcuts (e.g., `ponytail`, `pirate`, `concise`, `clear`, `tutor`, `yoda`).
 2. **Local Files & Remote URLs**: Pass any `.md` file or raw URL (`/rule https://raw.github.../prompt.md`).
 3. **Your Custom Aliases**: Create a `~/.terminal_pilot_rules.json` file in your home directory with your own shortcuts:
    ```json
